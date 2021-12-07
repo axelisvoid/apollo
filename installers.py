@@ -61,7 +61,13 @@ def list_snap_pkgs() -> List[str]:
 
 
 def install_apt_pkgs() -> Tuple[bool, Optional[str]]:
-    """Installs apt packages."""
+    """Installs apt packages.
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
     pkgs = list_apt_pkgs()
     pkgs_ = " ".join(pkgs)
@@ -74,7 +80,13 @@ def install_apt_pkgs() -> Tuple[bool, Optional[str]]:
 
 
 def install_snap_pkgs() -> Tuple[bool, Optional[str]]:
-    """Installs snap pkgs."""
+    """Installs snap pkgs.
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
     pkgs = list_snap_pkgs()
 
@@ -109,8 +121,16 @@ def install_snap_pkgs() -> Tuple[bool, Optional[str]]:
     return True, None
 
 
-def install_brave_browser():
-    """Installs Brave Browser."""
+def install_brave_browser() -> Tuple[bool, Optional[str]]:
+    """Installs Brave Browser.
+
+    Installation instructions from <https://brave.com/linux/#linux>
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
     cmd = ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg "
     "https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg"
@@ -140,8 +160,18 @@ def install_brave_browser():
     return True, None
 
 
-def install_docker():
-    """Installs Docker Engine and Docker Compose v2."""
+def install_docker() -> Tuple[bool, Optional[str]]:
+    """Installs Docker Engine and Docker Compose v2.
+
+    Installation instructions from <https://docs.docker.com/engine/install/ubuntu/> and
+    <https://docs.docker.com/engine/install/linux-postinstall/>
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
+
 
     cmd1 = ("curl -fsSL https://download.docker.com/linux/ubuntu/gpg"
            " | "
@@ -167,7 +197,8 @@ def install_docker():
     if stderr:
         return False, stderr
 
-    # post-install step required for Linux
+    # post-install step required for all Linux distros
+
     cmd = "groupadd docker && usermod -aG docker $USER"
     _, stderr = comm(cmd)
     if stderr:
@@ -177,15 +208,39 @@ def install_docker():
 
 
 def install_fish_shell():
-    """Installs Fish Shell."""
+    """Installs Fish Shell.
+
+    Installation instructions from <https://launchpad.net/~fish-shell/+archive/ubuntu/release-3>
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
 
 def install_google_chrome():
-    """Installs Google Chrome."""
+    """Installs Google Chrome.
+
+    [No installation "instructions" for Google Chrome]
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
 
 def install_poetry():
-    """Installs Poetry (package manager for Python)."""
+    """Installs Poetry (package manager for Python).
+
+    Installation instructions from <https://python-poetry.org/docs/>
+
+    Returns
+    -------
+    bool, str or None
+        Tuple representing the status of the installation, and the error message if there was any (None otherwise).
+    """
 
 
 # testing installation commands
