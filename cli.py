@@ -8,7 +8,11 @@ def comm(cmd: str) -> Tuple[str, str]:
     with subp.Popen(f"{cmd}", shell=True, stdout=subp.PIPE) as proc:
         stdout_, stderr_ = proc.communicate()
 
-    return stdout_.decode(), stderr_.decode()
+    dec_stdout = stdout_.decode()
+    if stderr_:
+        return dec_stdout, stderr_.decode()
+    else:
+        return dec_stdout, None
 
 
 def cmd_concat(cmds: List[str]) -> str:
