@@ -14,7 +14,7 @@ def list_apt_pkgs() -> List[str]:
         # needed for other software installation and/or they're simply useful
         "apt-transport-https",
         "curl",
-        "ca-certificate",
+        "ca-certificates",
         "gnupg",
         "lsb-release",
 
