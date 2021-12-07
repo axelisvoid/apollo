@@ -60,21 +60,6 @@ def list_snap_pkgs() -> List[str]:
     return pkgs
 
 
-def list_other_pkgs() -> List[str]:
-    """Returns a list of custom packages names."""
-
-    pkgs = [
-        "brave-browser",
-        "docker",
-        "fish-shell",
-        "google-chrome",
-        "poetry",
-    ]
-
-    return pkgs
-
-
-
 def install_apt_pkgs() -> Tuple[bool, Optional[str]]:
     """Installs apt packages."""
 
@@ -203,7 +188,10 @@ def install_poetry():
     """Installs Poetry (package manager for Python)."""
 
 
+# testing installation commands
 if __name__ == "__main__":
 
+    install_apt_pkgs()
+    install_snap_pkgs()
     install_brave_browser()
     install_docker()
