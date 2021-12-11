@@ -32,7 +32,7 @@ def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
     warning = b"\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n"
 
     if warning in errs:
-        errs = errs[len(apt_err):]
+        errs = errs[len(warning):]
     if len(errs) == 0:
         errs = None
     return errs
