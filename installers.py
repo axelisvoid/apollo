@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
-from cli import cmd_concat, comm
+from cli import capture_and_remove_apt_warning, cmd_concat, comm
+from exceptions import InstallationError
 
 
 def list_apt_pkgs() -> List[str]:
@@ -60,7 +61,7 @@ def list_snap_pkgs() -> List[str]:
     return pkgs
 
 
-def install_apt_pkgs() -> Tuple[bool, Optional[str]]:
+def install_apt_pkgs() -> bool:
     """Installs apt packages.
 
     Returns
@@ -73,13 +74,16 @@ def install_apt_pkgs() -> Tuple[bool, Optional[str]]:
     pkgs_ = " ".join(pkgs)
     cmd = f"apt install -y {pkgs_}"
 
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
-    return True, None
+    _, errs_ = comm(cmd)
+    errs = capture_and_remove_apt_warning(errs_)
+
+    if errs:
+        # print(errs)
+        raise InstallationError("Apt packages were not installed.")
+    return True
 
 
-def install_snap_pkgs() -> Tuple[bool, Optional[str]]:
+def install_snap_pkgs() -> bool:
     """Installs snap pkgs.
 
     Returns
@@ -88,40 +92,40 @@ def install_snap_pkgs() -> Tuple[bool, Optional[str]]:
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
 
-    pkgs = list_snap_pkgs()
+    pkgs_ = list_snap_pkgs()
+    install_cmd = "snap install"
+
+    err_msg = "Snap packages were not installed."
 
     # separate any package that needs the `--classic` flag
     # for now it simply assumes that if there is a flag, it will be exactly the `--classic` flag
     # fortunately, all the snap pkgs I need either don't need a flag or the flag is `--classic`. For now.
 
     flg_pkgs: List[str] = []
-    for pkg in pkgs:
-        flag = "--classic"
+    flag = "--classic"
+
+    for pkg in pkgs_:
         if flag in pkg:
-            flg_pkgs.append(pkg)
-            pkgs.remove(pkg)
+            flg_pkg = install_cmd + pkgs_.pop(pkg)
+            flg_pkgs.append(flg_pkg)
 
-    install_cmd = "snap install"
-    for flg_pkg in flg_pkgs:
-        flg_pkg = install_cmd + flg_pkg
+    cmd = cmd_concat(flg_pkgs)
 
-    pkgs_ = " ".join(pkgs)
-    cmd1 = f"snap install {pkgs_}"
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
-    _, stderr = comm(cmd1)
-    if stderr:
-        return False, stderr
+    pkgs = " ".join(pkgs_)
+    cmd = install_cmd + pkgs
 
-    cmd2 = cmd_concat(flg_pkgs)
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
-    _, stderr = comm(cmd2)
-    if stderr:
-        return False, stderr
-
-    return True, None
+    return True
 
 
-def install_brave_browser() -> Tuple[bool, Optional[str]]:
+def install_brave_browser() -> bool:
     """Installs Brave Browser.
 
     Installation instructions from <https://brave.com/linux/#linux>
@@ -132,35 +136,38 @@ def install_brave_browser() -> Tuple[bool, Optional[str]]:
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
 
-    cmd = ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg "
+    err_msg = "Brave browser was not installed."
+
+    cmd = ("curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg "
     "https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg"
            )
 
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
     cmd = ("echo "
            "\"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] "
            "https://brave-browser-apt-release.s3.brave.com/ stable main\""
            " | "
-           "sudo tee /etc/apt/sources.list.d/brave-browser-release.list"
+           "tee /etc/apt/sources.list.d/brave-browser-release.list"
           )
 
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
-    cmd = "update -y && install -y brave-browser"
+    cmd = "apt update -y && apt install -y brave-browser"
 
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+    _, errs_ = comm(cmd)
+    errs = capture_and_remove_apt_warning(errs_)
+    if errs:
+        raise InstallationError(err_msg)
 
-    return True, None
+    return True
 
 
-def install_docker() -> Tuple[bool, Optional[str]]:
+def install_docker() -> bool:
     """Installs Docker Engine and Docker Compose v2.
 
     Installation instructions from <https://docs.docker.com/engine/install/ubuntu/> and
@@ -172,42 +179,47 @@ def install_docker() -> Tuple[bool, Optional[str]]:
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
 
+    err_msg = "Docker was not installed."
 
-    cmd1 = ("curl -fsSL https://download.docker.com/linux/ubuntu/gpg"
+    cmd = ("curl -fsSL https://download.docker.com/linux/ubuntu/gpg"
            " | "
-           "sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
+           "gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
           )
 
-    cmd2 = ("echo "
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
+
+
+    cmd = ("echo "
             "\"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] "
             "https://download.docker.com/linux/ubuntu "
             "$(lsb_release -cs) stable\""
             " | "
-            "sudo tee /etc/apt/sources.list.d/docker.list > /dev/null"
+            "tee /etc/apt/sources.list.d/docker.list > /dev/null"
            )
 
-    cmd = cmd_concat([cmd1, cmd2])
-
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
     cmd = "apt update -y && apt install docker-ce docker-ce-cli containerd.io"
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
     # post-install step required for all Linux distros
 
     cmd = "groupadd docker && usermod -aG docker $USER"
-    _, stderr = comm(cmd)
-    if stderr:
-        return False, stderr
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
 
-    return True, None
+    return True
 
 
-def install_fish_shell():
+def install_fish_shell() -> bool:
     """Installs Fish Shell.
 
     Installation instructions from <https://launchpad.net/~fish-shell/+archive/ubuntu/release-3>
@@ -219,7 +231,7 @@ def install_fish_shell():
     """
 
 
-def install_google_chrome():
+def install_google_chrome() -> bool:
     """Installs Google Chrome.
 
     [No installation "instructions" for Google Chrome]
@@ -231,7 +243,7 @@ def install_google_chrome():
     """
 
 
-def install_poetry():
+def install_poetry() -> bool:
     """Installs Poetry (package manager for Python).
 
     Installation instructions from <https://python-poetry.org/docs/>
@@ -241,6 +253,16 @@ def install_poetry():
     bool, str or None
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
+
+
+def install_not_ppkd_prog() -> bool:
+    """Installs all programs not in apt nor snap packages."""
+
+    brave_inst, brave_err = install_brave_browser()
+    docker_inst, docker_err = install_docker()
+    fish_inst, fish_err = install_fish_shell()
+    chrome_inst, chrome_err = install_google_chrome()
+    poetry_inst, poetry_err = install_poetry()
 
 
 # testing installation commands
