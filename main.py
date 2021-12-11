@@ -4,6 +4,8 @@
 
 import argparse
 
+# from installers import install_all_pkgs
+
 
 def main():
     """Entry point for Apollo installer."""
