@@ -10,7 +10,7 @@ def comm(cmd: str) -> Tuple[str, Optional[bytes]]:
     with subp.Popen(f"{cmd}", shell=True, stdout=subp.PIPE, stderr=subp.PIPE) as proc:
         try:
             outs, errs = proc.communicate(timeout=timeout)
-        except TimeoutExpired:
+        except subp.TimeoutExpired:
             proc.kill()
             outs, errs = proc.communicate()
         except KeyboardInterrupt:
