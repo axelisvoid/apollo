@@ -93,7 +93,7 @@ def install_snap_pkgs() -> bool:
     """
 
     pkgs_ = list_snap_pkgs()
-    install_cmd = "snap install"
+    install_cmd = "snap install "
 
     err_msg = "Snap packages were not installed."
 
@@ -113,6 +113,7 @@ def install_snap_pkgs() -> bool:
 
     _, errs = comm(cmd)
     if errs:
+        print(errs.decode())
         raise InstallationError(err_msg)
 
     pkgs = " ".join(pkgs_)
@@ -120,6 +121,7 @@ def install_snap_pkgs() -> bool:
 
     _, errs = comm(cmd)
     if errs:
+        print(errs.decode())
         raise InstallationError(err_msg)
 
     return True
