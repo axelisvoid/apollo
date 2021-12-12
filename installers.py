@@ -104,9 +104,9 @@ def install_snap_pkgs() -> bool:
     flg_pkgs: List[str] = []
     flag = "--classic"
 
-    for pkg in pkgs_:
-        if flag in pkg:
-            flg_pkg = install_cmd + pkgs_.pop(pkg)
+    for pkg_indx in range(len(pkgs_) - 1):
+        if flag in pkgs_[pkg_indx]:
+            flg_pkg = install_cmd + pkgs_.pop(pkg_indx)
             flg_pkgs.append(flg_pkg)
 
     cmd = cmd_concat(flg_pkgs)
