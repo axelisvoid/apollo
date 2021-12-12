@@ -104,16 +104,15 @@ def install_snap_pkgs() -> bool:
     flg_pkgs: List[str] = []
     flag = "--classic"
 
-    for pkg_indx in range(len(pkgs_) - 1):
-        if flag in pkgs_[pkg_indx]:
-            flg_pkg = install_cmd + pkgs_.pop(pkg_indx)
+    for i, val in enumerate(pkgs_):
+        if flag in val:
+            flg_pkg = install_cmd + pkgs_[i]
             flg_pkgs.append(flg_pkg)
 
     cmd = cmd_concat(flg_pkgs)
 
     _, errs = comm(cmd)
     if errs:
-        print(errs.decode())
         raise InstallationError(err_msg)
 
     pkgs = " ".join(pkgs_)
@@ -121,7 +120,6 @@ def install_snap_pkgs() -> bool:
 
     _, errs = comm(cmd)
     if errs:
-        print(errs.decode())
         raise InstallationError(err_msg)
 
     return True
@@ -270,7 +268,7 @@ def install_not_ppkd_prog() -> bool:
 # testing installation commands
 if __name__ == "__main__":
 
-    install_apt_pkgs()
+    # install_apt_pkgs()
     install_snap_pkgs()
-    install_brave_browser()
-    install_docker()
+    # install_brave_browser()
+    # install_docker()
