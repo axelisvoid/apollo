@@ -36,3 +36,4 @@ def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
     if len(errs) == 0:
         errs = None
     return errs
+

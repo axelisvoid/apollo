@@ -1,6 +1,13 @@
+from pathlib import Path
+from shutil import which
+from subprocess import TimeoutExpired
 from typing import List, Optional, Tuple
 from cli import capture_and_remove_apt_warning, cmd_concat, comm
 from exceptions import InstallationError
+
+
+CURRENT_PATH = Path.cwd()
+DOWNLOADS_DIR = f"{CURRENT_PATH}/inst_downloads"
 
 
 def list_apt_pkgs() -> List[str]:
@@ -192,11 +199,11 @@ def install_docker() -> bool:
 
 
     cmd = ("echo "
-            "\"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] "
-            "https://download.docker.com/linux/ubuntu "
-            "$(lsb_release -cs) stable\""
-            " | "
-            "tee /etc/apt/sources.list.d/docker.list > /dev/null"
+           "\"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] "
+           "https://download.docker.com/linux/ubuntu "
+           "$(lsb_release -cs) stable\""
+           " | "
+           "tee /etc/apt/sources.list.d/docker.list > /dev/null"
            )
 
     _, errs = comm(cmd)
@@ -230,6 +237,30 @@ def install_fish_shell() -> bool:
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
 
+    err_msg = "Fish shell was not installed."
+    ppa_src = ("\"deb http://ppa.launchpad.net/fish-shell/release-3/ubuntu $(lsb_release -cs) main\n"
+               "# deb-src http://ppa.launchpad.net/fish-shell/release-3/ubuntu $(lsb_release -cs) main\""
+              )
+    ppa_file_name = "fish-shell-ubuntu-release-3-$(lsb_release -cs).list"
+
+    cmd = f"echo {ppa_src} >> {ppa_file_name}"
+    _, errs = comm(cmd)
+    if errs:
+        raise IntallationError(err_msg)
+
+    fingerprint = "59FDA1CE1B84B3FAD89366C027557F056DC33CA5"
+    cmd = f"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
+    _, errs = comm(cmd)
+    if errs:
+        raise IntallationError(err_msg)
+
+    cmd = "apt update -y && install -y fish"
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
+
+    return True
+
 
 def install_google_chrome() -> bool:
     """Installs Google Chrome.
@@ -241,6 +272,27 @@ def install_google_chrome() -> bool:
     bool, str or None
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
+
+    err_msg = "Google Chrome was not installed."
+
+    file_name = "google-chrome-stable_current_amd64.deb"
+    file_url = f"https://dl.google.com/linux/direct/{file_name}"
+    cmd = f"cd {DOWNLOADS_DIR} && curl -O {file_url}"
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
+
+    cmd = "apt install -y ./{file_name}"
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
+
+    cmd = f"rm {file_name}"
+    _, errs = comm(cmd)
+    if errs:
+        raise InstallationError(err_msg)
+
+    return True
 
 
 def install_poetry() -> bool:
@@ -254,21 +306,63 @@ def install_poetry() -> bool:
         Tuple representing the status of the installation, and the error message if there was any (None otherwise).
     """
 
+    err_msg = "Poetry was not installed."
+
+    python_v = ""
+    if which("python3"):
+        python_v = "3"
+    cmd = f"curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python{python_v} -"
+    _, errs = comm(cmd)
+    if errs:
+        InstallationError(err_msg)
+
+    return True
 
 def install_not_ppkd_prog() -> bool:
     """Installs all programs not in apt nor snap packages."""
 
-    brave_inst, brave_err = install_brave_browser()
-    docker_inst, docker_err = install_docker()
-    fish_inst, fish_err = install_fish_shell()
-    chrome_inst, chrome_err = install_google_chrome()
-    poetry_inst, poetry_err = install_poetry()
+    # brave browser
+    try:
+        install_brave_browser()
+    except InstallationError, TimeoutExpired:
+        raise InstallationError("Brave browser was not installed") from InstallationError
+        raise InstallationError("Brave browser installation took to long to complete.") from TimeoutExpired
+
+    # docker
+    try:
+        install_docker()
+    except InstallationError, TimeoutExpired:
+        raise InstallationError("Docker was not installed.")
+        raise InstallationError("Docker installation took to long to complete.") from TimeoutExpired
+
+    # fish shell
+    try:
+        install_fish_shell()
+    except InstallationError, TimeoutExpired:
+        raise InstallationError("Fish shell was not installed.")
+        raise InstallationError("Fish shell installation took to long to complete.") from TimeoutExpired
+
+    # google chrome
+    try:
+        install_google_chrome()
+    except InstallationError, TimeoutExpired:
+        raise InstallationError("Google Chrome was not installed.") from InstallationError
+        raise InstallationError("Google Chrome installation took to long to complete.") from TimeoutExpired
+
+    # poetry
+    try:
+        install_poetry()
+    except InstallationError, TimeoutExpired:
+        raise InstallationError("Poetry was not installed.") from InstallationError
+        raise InstallationError("Poetry installation took to long to complete.") from TimeoutExpired
+
+    return True
 
 
 # testing installation commands
 if __name__ == "__main__":
 
     # install_apt_pkgs()
-    install_snap_pkgs()
-    # install_brave_browser()
-    # install_docker()
+    # install_snap_pkgs()
+    # install_not_ppkd_prog()
+
