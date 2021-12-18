@@ -27,6 +27,9 @@ def main():
         print("Exiting...")
         return None
 
+    print("Pre-installation procedures were succesful.")
+
+    print("Continuing with software installation...")
     error = 0
     while error == 0:
         try:
