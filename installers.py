@@ -74,6 +74,7 @@ def install_apt_pkgs() -> bool:
     pkgs_ = " ".join(pkgs)
     cmd = f"apt install -y {pkgs_}"
 
+    print("Installing Apt packages...")
     _, errs_ = comm(cmd)
     if errs_:
         errs = capture_and_remove_apt_warning(errs_)
@@ -96,17 +97,18 @@ def install_snap_pkgs() -> bool:
     flg_pkgs: List[str] = []
     flag = "--classic"
 
-    for i, val in enumerate(pkgs_):
-        if flag in val:
-            flg_pkg = install_cmd + pkgs_[i]
-            flg_pkgs.append(flg_pkg)
+    for pkg in pkgs_:
+        if flag in pkg:
+            flg_pkgs.append(val)
         else:
             unflg_pkgs.append(val)
 
-    for inst in flg_pkgs:
-        _, errs = comm(inst)
+    print("Installing Snap packages...")
+
+    for pkg in flg_pkgs:
+        _, errs = comm(f"{install_cmd} {pkg}")
         if errs:
-            raise InstallationError("Failed to install flagged snaps.")
+            raise InstallationError(f"Failed to install {pkg} snap.")
 
     pkgs = " ".join(unflg_pkgs)
     cmd = install_cmd + pkgs
@@ -286,36 +288,42 @@ def install_not_ppkd_prog() -> bool:
     """Installs all programs not in apt nor snap packages."""
 
     # brave browser
+    print("Installing Brave Browser...")
     try:
         install_brave_browser()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Brave browser was not installed")
 
     # docker
+    print("Installing Docker...")
     try:
         install_docker()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Docker was not installed.")
 
     # fish shell
+    print("Installing Fish shell...")
     try:
         install_fish_shell()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Fish shell was not installed.")
 
     # google chrome
+    print("Installing Google Chrome...")
     try:
         install_google_chrome()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Google Chrome was not installed.")
 
     # neovim
+    print("Installing Neovim...")
     try:
         install_neovim()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Neovim was not installed.")
 
     # poetry
+    print("Installing Poetry...")
     try:
         install_poetry()
     except (InstallationError, TimeoutExpired):
@@ -408,14 +416,19 @@ def post_tmux() -> bool:
 def post_install() -> bool:
     """Procedures that should occur after all programs have been installed."""
 
+    print("Starting post-installation procedures for Fish shell.")
     try:
         post_fish_shell()
     except InstallationError:
         raise InstallationError("Fish shell's post installation procedures failed.")
+
+    print("Starting post-installation procedures for Neovim.")
     try:
         post_neovim()
     except InstallationError:
         raise InstallationError("Neovim's post installation procedures failed.")
+
+    print("Starting post-installation procedures for Tmux.")
     try:
         post_tmux()
     except InstallationError:
