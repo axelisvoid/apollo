@@ -92,6 +92,7 @@ def install_snap_pkgs() -> bool:
     # for now it simply assumes that if there is a flag, it will be exactly the `--classic` flag
     # fortunately, all the snap pkgs I need either don't need a flag or the flag is `--classic`. For now.
 
+    unflg_pkgs: List[str] = []
     flg_pkgs: List[str] = []
     flag = "--classic"
 
@@ -99,13 +100,15 @@ def install_snap_pkgs() -> bool:
         if flag in val:
             flg_pkg = install_cmd + pkgs_[i]
             flg_pkgs.append(flg_pkg)
+        else:
+            unflg_pkgs.append(val)
 
     for inst in flg_pkgs:
         _, errs = comm(inst)
         if errs:
             raise InstallationError("Failed to install flagged snaps.")
 
-    pkgs = " ".join(pkgs_)
+    pkgs = " ".join(unflg_pkgs)
     cmd = install_cmd + pkgs
 
     _, errs = comm(cmd)
