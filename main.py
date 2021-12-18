@@ -2,14 +2,30 @@
 # -*- coding: utf-8 -*-
 
 
-from installers import install_apt_pkgs, install_snap_pkgs, install_not_ppkd_prog
-# TODO: Add cleanup and post_install function imports
+from exceptions import InstallationError, ImgDownloadError
+from imgs import download_all_imgs
+from installers import (
+    cleanup,
+    install_apt_pkgs,
+    install_not_ppkd_prog,
+    install_snap_pkgs,
+    pre_install,
+    post_install,
+)
 
 
 def main():
     """Entry point for Apollo installer."""
 
     print("Installing packages... This might take a few minutes.")
+
+    print("Starting pre-installation procedures.")
+    try:
+        pre_install()
+    except InstallationError:
+        print("Pre-installation procedures failed.")
+        print("Exiting...")
+        return None
 
     error = 0
     while error == 0:
@@ -33,20 +49,40 @@ def main():
 
     if error != 0:
         print("Installation process was interrupted. Exiting...")
-        break
+        return None
 
-#    print("Installation successful.")
-#
-#    print("Continuing to post-installation phase.")
-#    post_install()
-#    print("Post-installation phase successful.")
-#
-#    print("Cleaning up downloaded files.")
-#    cleanup()
-#
-#    print("Cleanup successful.")
-#
-#    print("All done here.")
+    print("Installation successful.")
+
+    # post-installation
+
+    print("Starting post-installation procedures.")
+    try:
+        post_install()
+    except InstallationError:
+        print("Post-installation procedures failed.")
+        print("Exiting...")
+        return None
+    print("Post-installation procedures were successful.")
+
+    # images
+    
+    print("Starting to download all images.")
+    try:
+        download_all_imgs()
+    except ImgDownloadError:
+        print("Some images failed to download.")
+        print("Continuing...")
+
+    # cleanup
+
+    print("Cleaning up the mess.")
+    if not cleanup():
+        print("Failed cleanup procedures. You should still perform this manually.")
+        print("Delete downloads directory.")
+    else:
+        print("Cleanup successful.")
+
+    print("All done here.")
 
 
 if __name__ == "__main__":
