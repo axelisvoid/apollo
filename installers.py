@@ -1,7 +1,7 @@
 from pathlib import Path
 from shutil import copyfile, SameFileError, which
 from subprocess import TimeoutExpired
-from typing import List, Optional, Tuple
+from typing import List
 from cli import capture_and_remove_apt_warning, cmd_concat, comm
 from exceptions import InstallationError
 
@@ -73,7 +73,7 @@ def list_snap_pkgs() -> List[str]:
 def pre_install() -> bool:
     """Creates "downloads" directory to be used at any point during the installation and post-installation phase."""
 
-    cmd = f"mkdir {DOWNLOADS_DIR}"
+    cmd = f"mkdir {DOWNLOADS_PATH}"
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed pre-installation procedure.")
@@ -88,10 +88,10 @@ def install_apt_pkgs() -> bool:
     cmd = f"apt install -y {pkgs_}"
 
     _, errs_ = comm(cmd)
-    errs = capture_and_remove_apt_warning(errs_)
-
-    if errs:
-        raise InstallationError("Apt packages were not installed.")
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            raise InstallationError("Apt packages were not installed.")
     return True
 
 
@@ -157,9 +157,10 @@ def install_brave_browser() -> bool:
     cmd = "apt update -y && apt install -y brave-browser"
 
     _, errs_ = comm(cmd)
-    errs = capture_and_remove_apt_warning(errs_)
-    if errs:
-        raise InstallationError("Failed to install Brave Browser's apt package.")
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            raise InstallationError("Failed to install Brave Browser's apt package.")
 
     return True
 
@@ -223,13 +224,13 @@ def install_fish_shell() -> bool:
     cmd = f"echo {ppa_src} >> {ppa_file_name}"
     _, errs = comm(cmd)
     if errs:
-        raise IntallationError("Failed to create Fish's ppa file.")
+        raise InstallationError("Failed to create Fish's ppa file.")
 
     fingerprint = "59FDA1CE1B84B3FAD89366C027557F056DC33CA5"
     cmd = f"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
     _, errs = comm(cmd)
     if errs:
-        raise IntallationError("Failed to add Fish's fingerprint.")
+        raise InstallationError("Failed to add Fish's fingerprint.")
 
     cmd = "apt update -y && install -y fish"
     _, errs = comm(cmd)
@@ -242,11 +243,9 @@ def install_fish_shell() -> bool:
 def install_google_chrome() -> bool:
     """Installs Google Chrome."""
 
-    err_msg = "Google Chrome was not installed."
-
     file_name = "google-chrome-stable_current_amd64.deb"
     file_url = f"https://dl.google.com/linux/direct/{file_name}"
-    cmd = f"cd {DOWNLOADS_DIR} && curl -O {file_url}"
+    cmd = f"cd {DOWNLOADS_PATH} && curl -O {file_url}"
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to download Google Chrome's .deb file.")
@@ -266,12 +265,12 @@ def install_neovim() -> bool:
     """
 
     url = "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    cmd = f"cd {DOWNLOADS_DIR} && curl -LO {url}"
+    cmd = f"cd {DOWNLOADS_PATH} && curl -LO {url}"
     _, errs = comm(cmd)
     if errs:
-        raise InstallationError(err_msg)
+        raise InstallationError("Failed to retrieve neovim .appimage file.")
 
-    cmd = f"cd {DOWNLOADS_DIR} && -u $USER chmod u+x nvim.appimage"
+    cmd = f"cd {DOWNLOADS_PATH} && -u $USER chmod u+x nvim.appimage"
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to make nvim.appimage executable.")
@@ -300,44 +299,38 @@ def install_not_ppkd_prog() -> bool:
     # brave browser
     try:
         install_brave_browser()
-    except InstallationError, TimeoutExpired:
-        raise InstallationError("Brave browser was not installed") from InstallationError
-        raise InstallationError("Brave browser installation took to long to complete.") from TimeoutExpired
+    except (InstallationError, TimeoutExpired):
+        raise InstallationError("Brave browser was not installed")
 
     # docker
     try:
         install_docker()
-    except InstallationError, TimeoutExpired:
+    except (InstallationError, TimeoutExpired):
         raise InstallationError("Docker was not installed.")
-        raise InstallationError("Docker installation took to long to complete.") from TimeoutExpired
 
     # fish shell
     try:
         install_fish_shell()
-    except InstallationError, TimeoutExpired:
+    except (InstallationError, TimeoutExpired):
         raise InstallationError("Fish shell was not installed.")
-        raise InstallationError("Fish shell installation took to long to complete.") from TimeoutExpired
 
     # google chrome
     try:
         install_google_chrome()
-    except InstallationError, TimeoutExpired:
-        raise InstallationError("Google Chrome was not installed.") from InstallationError
-        raise InstallationError("Google Chrome installation took to long to complete.") from TimeoutExpired
+    except (InstallationError, TimeoutExpired):
+        raise InstallationError("Google Chrome was not installed.")
 
     # neovim
     try:
         install_neovim()
-    except InstallationError, TimeoutExpired:
-        raise InstallationError("Neovim was not installed.") from InstallationError
-        raise InstallationError("Neovim installation took too long to complete.") from TimeoutExpired
+    except (InstallationError, TimeoutExpired):
+        raise InstallationError("Neovim was not installed.")
 
     # poetry
     try:
         install_poetry()
-    except InstallationError, TimeoutExpired:
-        raise InstallationError("Poetry was not installed.") from InstallationError
-        raise InstallationError("Poetry installation took to long to complete.") from TimeoutExpired
+    except (InstallationError, TimeoutExpired):
+        raise InstallationError("Poetry was not installed.")
 
     return True
 
@@ -369,13 +362,13 @@ def post_neovim() -> bool:
     """Sets up vim alias for nvim and copies `init.vim` file to configuration directory."""
 
     file = "nvim.appimage"
-    src = f"{DOWNLOADS_DIR}/{file}"
+    src = f"{DOWNLOADS_PATH}/{file}"
     dest = f"/usr/local/bin/{file}"
 
     try:
         copyfile(src, dest)
     except SameFileError:
-        raise SameFileError("The source and destination files are the same.") from SameFileError
+        raise SameFileError("The source and destination files are the same.")
 
     # make vim command execute nvim
     cmd = "update-alternatives --install /usr/bin/vim vim {dest} 110"
@@ -395,7 +388,7 @@ def post_neovim() -> bool:
     try:
         copyfile(src, dest)
     except SameFileError:
-        raise SameFileError("The source and destination files are the same.") from SameFileError
+        raise SameFileError("The source and destination files are the same.")
 
     return True
 
@@ -405,8 +398,6 @@ def post_tmux() -> bool:
 
     tpm_repo = "https://github.com/tmux-plugins/tpm"        # tpm repo url
     tpm_clone_path = "~/.tmux/plugins/tpm"                  # tpm repo dest path
-    src = f"{CONFIG_FILES_PATH}/tmux.conf"                  # tmux.conf source path
-    dest = "~/.tmux.conf"                                   # tmux.conf dest path
 
     # clone Tmux Plugin Manager github repo
     cmd = f"git clone {tpm_repo} {tpm_clone_path}"
@@ -415,8 +406,10 @@ def post_tmux() -> bool:
         raise InstallationError("Failed to clone Tmux Plugin Manager's github repo.")
 
     # copy .tmux.conf file
+    src = f"{CONFIG_FILES_PATH}/tmux.conf"                  # tmux.conf source path
+    dest = "~/.tmux.conf"                                   # tmux.conf dest path
     try:
-        copyfile(tmux_conf_src, tmux_conf_dest)
+        copyfile(src, dest)
     except SameFileError:
         raise SameFileError("The source and destination files are the same.") from SameFileError
 
@@ -459,12 +452,11 @@ def cleanup() -> bool:
 
 
 # testing installation commands
-if __name__ == "__main__":
-
-    # pre_install()
-    # install_apt_pkgs()
-    # install_snap_pkgs()
-    # install_not_ppkd_prog()
-    # post_install()
-    # cleanup()
-
+#if __name__ == "__main__":
+#
+#    pre_install()
+#    install_apt_pkgs()
+#    install_snap_pkgs()
+#    install_not_ppkd_prog()
+#    post_install()
+#    cleanup()
