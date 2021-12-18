@@ -2,7 +2,7 @@ from pathlib import Path
 from shutil import copyfile, SameFileError, which
 from subprocess import TimeoutExpired
 from typing import List
-from cli import capture_and_remove_apt_warning, cmd_concat, comm
+from cli import capture_and_remove_apt_warning, comm
 from exceptions import InstallationError
 
 
@@ -28,21 +28,8 @@ def list_apt_pkgs() -> List[str]:
         "gnupg",
         "lsb-release",
 
-        # to build C/C++ code
-        "ninja-build",
-
         # needed for OpenGL programming.
         "cmake",
-        "mesa-utils",
-        "libglu1-mesa-dev",
-        "freeglut3-dev",
-        "mesa-common-dev",
-        "libglew-dev",
-        "libglfw3-dev",
-        "libglm-dev",
-        "libao-dev",
-        "libmpg123-dev",
-        "xorg-dev",                     # X11-specific desktop environment
 
         "htop",                         # better than top
         "mmv",                          # move/copy/append/link multiple files according to a set of wildcard patterns
@@ -113,11 +100,10 @@ def install_snap_pkgs() -> bool:
             flg_pkg = install_cmd + pkgs_[i]
             flg_pkgs.append(flg_pkg)
 
-    cmd = cmd_concat(flg_pkgs)
-
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to install flagged snaps.")
+    for inst in flg_pkgs:
+        _, errs = comm(inst)
+        if errs:
+            raise InstallationError("Failed to install flagged snaps.")
 
     pkgs = " ".join(pkgs_)
     cmd = install_cmd + pkgs
