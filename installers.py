@@ -71,15 +71,16 @@ def install_apt_pkgs() -> bool:
     """Installs apt packages."""
 
     pkgs = list_apt_pkgs()
-    pkgs_ = " ".join(pkgs)
-    cmd = f"apt install -y {pkgs_}"
 
     print("Installing Apt packages...")
-    _, errs_ = comm(cmd)
-    if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
-        if errs:
-            raise InstallationError("Apt packages were not installed.")
+
+    for pkg in pkgs:
+        print("Installing {pkg}")
+        _, errs_ = comm(f"apt install -y {pkg}")
+        if errs_:
+            errs = capture_and_remove_apt_warning(errs_)
+            if errs:
+                raise InstallationError(f"Failed to install {pkg}.")
 
     print("Apt packages successfully installed.")
     return True
@@ -108,16 +109,18 @@ def install_snap_pkgs() -> bool:
     print("Installing Snap packages...")
 
     for pkg in flg_pkgs:
+        print(f"Installing {pkg}...")
         _, errs = comm(f"{install_cmd} {pkg}")
         if errs:
-            raise InstallationError(f"Failed to install {pkg} snap.")
+            raise InstallationError(f"Failed to install {pkg}.")
 
-    pkgs = " ".join(unflg_pkgs)
-    cmd = install_cmd + pkgs
-
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to install unflagged snaps.")
+    for pkg in unflg_pkgs:
+        print(f"Installing {pkg}...")
+        _, errs = comm(f"{install_cmd} + {pkg}")
+        if errs:
+            raise InstallationError("Failed to install {pkg}.")
+    
+    print("Snap packages were successfully installed.")
 
     return True
 
@@ -132,9 +135,11 @@ def install_brave_browser() -> bool:
     "https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg"
            )
 
+    print("Getting Brave Browser's signing keys...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Brave Browser's fingerprint.")
+    print("Successfully added Brave Browser's signing keys.")
 
     cmd = ("echo "
            "\"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] "
@@ -143,18 +148,21 @@ def install_brave_browser() -> bool:
            "tee /etc/apt/sources.list.d/brave-browser-release.list"
           )
 
+    print("Adding Brave Browser's Apt repository...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Brave Browser's ppa.")
+    print("Successfully added Brave Browser's Apt repository.")
 
     cmd = "apt update -y && apt install -y brave-browser"
 
+    print("Installing Brave Browser's apt package...")
     _, errs_ = comm(cmd)
     if errs_:
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
             raise InstallationError("Failed to install Brave Browser's apt package.")
-
+    print("Installation successful.")
     return True
 
 
@@ -170,9 +178,11 @@ def install_docker() -> bool:
            "gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
           )
 
+    print("Adding Docker signing keys...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Docker's fingerprint.")
+    print("Successfully added signing keys.")
 
 
     cmd = ("echo "
@@ -183,22 +193,27 @@ def install_docker() -> bool:
            "tee /etc/apt/sources.list.d/docker.list > /dev/null"
            )
 
+    print("Adding Docker apt repository...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Docker's ppa.")
+    print("Apt repository successfully added.")
 
     cmd = "apt update -y && apt install docker-ce docker-ce-cli containerd.io"
-
+    print("Installing all necessary apt packages...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to install Docker apt packages.")
+    print("Installation successful.")
 
     # post-install step required for all Linux distros
 
     cmd = "groupadd docker && usermod -aG docker $USER"
+    print("Adding Docker group and adding user to it...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Docker's group and/or add user to Docker's group.")
+    print("Successfully added user to Docker group")
 
     return True
 
@@ -215,20 +230,26 @@ def install_fish_shell() -> bool:
     ppa_file_name = "fish-shell-ubuntu-release-3-$(lsb_release -cs).list"
 
     cmd = f"echo {ppa_src} >> {ppa_file_name}"
+    print("Saving Fish shell's ppa...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to create Fish's ppa file.")
+    print("Save successful.")
 
     fingerprint = "59FDA1CE1B84B3FAD89366C027557F056DC33CA5"
     cmd = f"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
+    print("Adding Fish shell's fingerprint...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to add Fish's fingerprint.")
+    print("Fingerprint successfully added.")
 
     cmd = "apt update -y && install -y fish"
+    print("Installing Fish shell's apt package...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to install Fish shell.")
+    print("Installation successful.")
 
     return True
 
@@ -239,14 +260,19 @@ def install_google_chrome() -> bool:
     file_name = "google-chrome-stable_current_amd64.deb"
     file_url = f"https://dl.google.com/linux/direct/{file_name}"
     cmd = f"cd {DOWNLOADS_PATH} && curl -O {file_url}"
+
+    print("Downloading Google Chrome's .deb file...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to download Google Chrome's .deb file.")
+    print("Download successful.")
 
     cmd = "apt install -y ./{file_name}"
+    print("Installing Google Chrome from .deb file...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to install Google Chrome from .deb file.")
+    print("Installation successful.")
 
     return True
 
@@ -259,14 +285,18 @@ def install_neovim() -> bool:
 
     url = "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
     cmd = f"cd {DOWNLOADS_PATH} && curl -LO {url}"
+    print("Downloading Neovim's .appimage file...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to retrieve neovim .appimage file.")
+    print("Download successful.")
 
     cmd = f"cd {DOWNLOADS_PATH} && -u $USER chmod u+x nvim.appimage"
+    print("Making Neovim's .appimage executable...")
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to make nvim.appimage executable.")
+    print("Chmod successful.")
 
     return True
 
@@ -280,9 +310,11 @@ def install_poetry() -> bool:
     if which("python3"):
         python_v = "3"
     cmd = f"curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python{python_v} -"
+    print("Executing Poetry's installation script...")
     _, errs = comm(cmd)
     if errs:
         InstallationError("Poetry was not installed.")
+    print("Execution successful.")
 
     return True
 
@@ -295,6 +327,8 @@ def install_not_ppkd_prog() -> bool:
         install_brave_browser()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Brave browser was not installed")
+    else:
+        print("Successfully installed Brave Browser.")
 
     # docker
     print("Installing Docker...")
@@ -302,6 +336,9 @@ def install_not_ppkd_prog() -> bool:
         install_docker()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Docker was not installed.")
+    else:
+        print("Successfully installed Docker.")
+
 
     # fish shell
     print("Installing Fish shell...")
@@ -309,6 +346,7 @@ def install_not_ppkd_prog() -> bool:
         install_fish_shell()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Fish shell was not installed.")
+    print("Successfully installed Fish shell.")
 
     # google chrome
     print("Installing Google Chrome...")
@@ -316,6 +354,7 @@ def install_not_ppkd_prog() -> bool:
         install_google_chrome()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Google Chrome was not installed.")
+    print("Successfully installed Google Chrome.")
 
     # neovim
     print("Installing Neovim...")
@@ -323,6 +362,7 @@ def install_not_ppkd_prog() -> bool:
         install_neovim()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Neovim was not installed.")
+    print("Successfully installed Neovim.")
 
     # poetry
     print("Installing Poetry...")
@@ -330,6 +370,7 @@ def install_not_ppkd_prog() -> bool:
         install_poetry()
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Poetry was not installed.")
+    print("Successfully installed Poetry.")
 
     return True
 
