@@ -116,9 +116,9 @@ def install_snap_pkgs() -> bool:
 
     for pkg in unflg_pkgs:
         print(f"Installing {pkg}...")
-        _, errs = comm(f"{install_cmd} + {pkg}")
+        _, errs = comm(f"{install_cmd} {pkg}")
         if errs:
-            raise InstallationError("Failed to install {pkg}.")
+            raise InstallationError(f"Failed to install {pkg}.")
     
     print("Snap packages were successfully installed.")
 
