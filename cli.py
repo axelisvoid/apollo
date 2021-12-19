@@ -6,14 +6,9 @@ from typing import List, Optional, Tuple
 def comm(cmd: str) -> Tuple[bytes, Optional[bytes]]:
     """Executes a shell command using `subp.Popen` interface."""
 
-    timeout = 30            # in seconds
-
     with subp.Popen(f"{cmd}", shell=True, stdout=subp.PIPE, stderr=subp.PIPE) as proc:
         try:
-            outs, errs = proc.communicate(timeout=timeout)
-        except subp.TimeoutExpired:
-            proc.kill()
-            raise subp.TimeoutExpired(cmd, timeout)
+            outs, errs = proc.communicate()
         except KeyboardInterrupt:
             proc.kill()
             raise KeyboardInterrupt from KeyboardInterrupt
