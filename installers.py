@@ -199,11 +199,17 @@ def install_docker() -> bool:
         raise InstallationError("Failed to add Docker's ppa.")
     print("Apt repository successfully added.")
 
-    cmd = "apt update -y && apt install docker-ce docker-ce-cli containerd.io"
     print("Installing all necessary apt packages...")
+    cmd = "apt update -y"
     _, errs = comm(cmd)
     if errs:
         raise InstallationError("Failed to install Docker apt packages.")
+    pkgs = ["docker-ce", "docker-ce-cli", "containerd.io"]
+    for pkg in pkgs:
+        print(f"Installing {pkg}")
+        _, errs = comm(f"apt install -y {pkg}")
+        if errs:
+            raise InstallationError("Failed to install Docker apt packages.")
     print("Installation successful.")
 
     # post-install step required for all Linux distros

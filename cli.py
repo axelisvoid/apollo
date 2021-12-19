@@ -31,7 +31,7 @@ def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
         s_warning = warning.decode()
         s_errs = errs.decode()
         patt = re.compile(s_warning)
-        # span will not return None because we already know the warning is in errs
+        # search will not return None because we already know the warning is in errs
         res = patt.search(s_errs).span()
         tmp_subs = s_errs[res[0]:res[1]]
         s_errs = s_errs.replace(tmp_subs, "")
