@@ -75,7 +75,7 @@ def install_apt_pkgs() -> bool:
     print("Installing Apt packages...")
 
     for pkg in pkgs:
-        print("Installing {pkg}")
+        print(f"Installing {pkg}")
         _, errs_ = comm(f"apt install -y {pkg}")
         if errs_:
             errs = capture_and_remove_apt_warning(errs_)
