@@ -80,6 +80,8 @@ def install_apt_pkgs() -> bool:
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
             raise InstallationError("Apt packages were not installed.")
+
+    print("Apt packages successfully installed.")
     return True
 
 
@@ -99,9 +101,9 @@ def install_snap_pkgs() -> bool:
 
     for pkg in pkgs_:
         if flag in pkg:
-            flg_pkgs.append(val)
+            flg_pkgs.append(pkg)
         else:
-            unflg_pkgs.append(val)
+            unflg_pkgs.append(pkg)
 
     print("Installing Snap packages...")
 
