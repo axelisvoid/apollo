@@ -1,3 +1,4 @@
+import re
 import subprocess as subp
 from typing import List, Optional, Tuple
 
@@ -30,10 +31,16 @@ def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
     """Captures apt cli constant warning and removes it from an error bytes object."""
 
     warning = b"\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n"
-
+    
     if warning in errs:
-        errs = errs[len(warning):]
-    if len(errs) == 0:
-        errs = None
+        s_warning = warning.decode()
+        s_errs = errs.decode()
+        patt = re.compile(s_warning)
+        # span will not return None because we already know the warning is in errs
+        res = patt.search(s_errs).span()
+        tmp_subs = s_errs[res[0]:res[1]]
+        s_errs = s_errs.replace(tmp_subs, "")
+        errs_ = bytes(s_errs, "utf8")
+        errs = capture_and_remove_apt_warning(errs_)
+    
     return errs
-
