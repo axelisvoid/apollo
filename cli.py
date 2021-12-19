@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 def comm(cmd: str) -> Tuple[str, Optional[bytes]]:
     """Executes a shell command using `subp.Popen` interface."""
 
-    timeout = 15            # in seconds
+    timeout = 30            # in seconds
 
     with subp.Popen(f"{cmd}", shell=True, stdout=subp.PIPE, stderr=subp.PIPE) as proc:
         try:
