@@ -3,7 +3,7 @@ import subprocess as subp
 from typing import List, Optional, Tuple
 
 
-def comm(cmd: str) -> Tuple[str, Optional[bytes]]:
+def comm(cmd: str) -> Tuple[bytes, Optional[bytes]]:
     """Executes a shell command using `subp.Popen` interface."""
 
     timeout = 30            # in seconds
@@ -13,7 +13,7 @@ def comm(cmd: str) -> Tuple[str, Optional[bytes]]:
             outs, errs = proc.communicate(timeout=timeout)
         except subp.TimeoutExpired:
             proc.kill()
-            outs, errs = proc.communicate()
+            raise subp.TimeoutExpired(cmd, timeout)
         except KeyboardInterrupt:
             proc.kill()
             raise KeyboardInterrupt from KeyboardInterrupt
