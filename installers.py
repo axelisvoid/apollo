@@ -205,6 +205,7 @@ def install_docker() -> bool:
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
             raise InstallationError("Failed to install Docker apt packages.")
+    print("Apt repositories successfully updated.")
 
     pkgs = ["docker-ce", "docker-ce-cli", "containerd.io"]
     for pkg in pkgs:
@@ -218,12 +219,12 @@ def install_docker() -> bool:
 
     # post-install step required for all Linux distros
 
-    cmd = "groupadd docker && usermod -aG docker $USER"
-    print("Adding Docker group and adding user to it...")
+    cmd = "usermod -aG docker $USER"
+    print("Adding user to docker group...")
     _, errs = comm(cmd)
     if errs:
         print(errs)
-        raise InstallationError("Failed to add Docker's group and/or add user to Docker's group.")
+        raise InstallationError("Failed to add user to docker group.")
     print("Successfully added user to Docker group")
 
     return True
@@ -244,6 +245,7 @@ def install_fish_shell() -> bool:
     print("Saving Fish shell's ppa...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         raise InstallationError("Failed to create Fish's ppa file.")
     print("Save successful.")
 
@@ -252,6 +254,7 @@ def install_fish_shell() -> bool:
     print("Adding Fish shell's fingerprint...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         raise InstallationError("Failed to add Fish's fingerprint.")
     print("Fingerprint successfully added.")
 
@@ -261,6 +264,7 @@ def install_fish_shell() -> bool:
     if errs_:
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
+            print(errs)
             raise InstallationError("Failed to install Fish shell.")
     print("Installation successful.")
 
@@ -277,6 +281,7 @@ def install_google_chrome() -> bool:
     print("Downloading Google Chrome's .deb file...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         raise InstallationError("Failed to download Google Chrome's .deb file.")
     print("Download successful.")
 
@@ -284,6 +289,7 @@ def install_google_chrome() -> bool:
     print("Installing Google Chrome from .deb file...")
     _, errs_ = comm(cmd)
     if errs_:
+        print(errs)
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
             raise InstallationError("Failed to install Google Chrome from .deb file.")
@@ -303,6 +309,7 @@ def install_neovim() -> bool:
     print("Downloading Neovim's .appimage file...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         raise InstallationError("Failed to retrieve neovim .appimage file.")
     print("Download successful.")
 
@@ -310,6 +317,7 @@ def install_neovim() -> bool:
     print("Making Neovim's .appimage executable...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         raise InstallationError("Failed to make nvim.appimage executable.")
     print("Chmod successful.")
 
@@ -328,6 +336,7 @@ def install_poetry() -> bool:
     print("Executing Poetry's installation script...")
     _, errs = comm(cmd)
     if errs:
+        print(errs)
         InstallationError("Poetry was not installed.")
     print("Execution successful.")
 
