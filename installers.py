@@ -236,27 +236,13 @@ def install_fish_shell() -> bool:
     Installation instructions from <https://launchpad.net/~fish-shell/+archive/ubuntu/release-3>
     """
 
-    ppa_src = ("\"deb http://ppa.launchpad.net/fish-shell/release-3/ubuntu $(lsb_release -cs) main\n"
-               "# deb-src http://ppa.launchpad.net/fish-shell/release-3/ubuntu $(lsb_release -cs) main\""
-              )
-    ppa_file_name = "fish-shell-ubuntu-release-3-$(lsb_release -cs).list"
-
-    cmd = f"echo {ppa_src} >> {ppa_file_name}"
-    print("Saving Fish shell's ppa...")
+    cmd = "apt-add-repository ppa:fish-shell/release-3 -y"
+    print("Adding Fish shell's apt repository...")
     _, errs = comm(cmd)
     if errs:
         print(errs)
         raise InstallationError("Failed to create Fish's ppa file.")
     print("Save successful.")
-
-    fingerprint = "59FDA1CE1B84B3FAD89366C027557F056DC33CA5"
-    cmd = f"apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
-    print("Adding Fish shell's fingerprint...")
-    _, errs = comm(cmd)
-    if errs:
-        print(errs)
-        raise InstallationError("Failed to add Fish's fingerprint.")
-    print("Fingerprint successfully added.")
 
     cmd = "apt update -y && install -y fish"
     print("Installing fish...")
