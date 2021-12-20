@@ -250,7 +250,7 @@ def install_fish_shell() -> bool:
     print("Save successful.")
 
     fingerprint = "59FDA1CE1B84B3FAD89366C027557F056DC33CA5"
-    cmd = f"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
+    cmd = f"apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys {fingerprint}"
     print("Adding Fish shell's fingerprint...")
     _, errs = comm(cmd)
     if errs:
