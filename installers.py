@@ -201,15 +201,20 @@ def install_docker() -> bool:
 
     print("Installing all necessary apt packages...")
     cmd = "apt update -y"
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to install Docker apt packages.")
+    _, errs_ = comm(cmd)
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            raise InstallationError("Failed to install Docker apt packages.")
+
     pkgs = ["docker-ce", "docker-ce-cli", "containerd.io"]
     for pkg in pkgs:
         print(f"Installing {pkg}")
-        _, errs = comm(f"apt install -y {pkg}")
-        if errs:
-            raise InstallationError("Failed to install Docker apt packages.")
+        _, errs_ = comm(f"apt install -y {pkg}")
+        if errs_:
+            errs = capture_and_remove_apt_warning(errs_)
+            if errs:
+                raise InstallationError("Failed to install Docker apt packages.")
     print("Installation successful.")
 
     # post-install step required for all Linux distros
@@ -252,9 +257,11 @@ def install_fish_shell() -> bool:
 
     cmd = "apt update -y && install -y fish"
     print("Installing Fish shell's apt package...")
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to install Fish shell.")
+    _, errs_ = comm(cmd)
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            raise InstallationError("Failed to install Fish shell.")
     print("Installation successful.")
 
     return True
@@ -275,9 +282,11 @@ def install_google_chrome() -> bool:
 
     cmd = "apt install -y ./{file_name}"
     print("Installing Google Chrome from .deb file...")
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to install Google Chrome from .deb file.")
+    _, errs_ = comm(cmd)
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            raise InstallationError("Failed to install Google Chrome from .deb file.")
     print("Installation successful.")
 
     return True
