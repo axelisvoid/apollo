@@ -244,7 +244,7 @@ def install_fish_shell() -> bool:
         raise InstallationError("Failed to create Fish's ppa file.")
     print("Save successful.")
 
-    cmd = "apt update -y && install -y fish"
+    cmd = "apt update -y && apt install -y fish"
     print("Installing fish...")
     _, errs_ = comm(cmd)
     if errs_:
