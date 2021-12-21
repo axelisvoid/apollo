@@ -262,7 +262,7 @@ def install_google_chrome() -> bool:
 
     file_name = "google-chrome-stable_current_amd64.deb"
     file_url = f"https://dl.google.com/linux/direct/{file_name}"
-    cmd = f"cd {DOWNLOADS_PATH} && curl -O {file_url}"
+    cmd = f"cd {DOWNLOADS_PATH} && curl -sO {file_url}"
 
     print("Downloading Google Chrome's .deb file...")
     _, errs = comm(cmd)
@@ -408,5 +408,4 @@ def cleanup() -> bool:
 #    install_apt_pkgs()
 #    install_snap_pkgs()
 #    install_not_ppkd_prog()
-#    post_install()
 #    cleanup()

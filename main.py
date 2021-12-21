@@ -10,8 +10,8 @@ from installers import (
     install_not_ppkd_prog,
     install_snap_pkgs,
     pre_install,
-    post_install,
 )
+from post_installers import post_install
 
 
 def main():
