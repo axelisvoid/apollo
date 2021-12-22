@@ -28,11 +28,11 @@ def list_apt_pkgs() -> List[str]:
         "gnupg",
         "lsb-release",
 
-        # needed for OpenGL programming.
         "cmake",
 
         "htop",                         # better than top
         "mmv",                          # move/copy/append/link multiple files according to a set of wildcard patterns
+        "neovim",
         "tmux",                         # terminal multiplexer
 
     ]
@@ -284,31 +284,6 @@ def install_google_chrome() -> bool:
     return True
 
 
-def install_neovim() -> bool:
-    """Installs Neovim.
-
-    Installation instructions form <>"
-    """
-
-    url = "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    cmd = f"cd {DOWNLOADS_PATH} && curl -sO {url}"
-    print("Downloading Neovim's .appimage file...")
-    _, errs = comm(cmd)
-    if errs:
-        print(errs)
-        raise InstallationError("Failed to retrieve neovim .appimage file.")
-    print("Download successful.")
-
-    cmd = f"cd {DOWNLOADS_PATH} && -u $USER chmod u+x nvim.appimage"
-    print("Making Neovim's .appimage executable...")
-    _, errs = comm(cmd)
-    if errs:
-        print(errs)
-        raise InstallationError("Failed to make nvim.appimage executable.")
-    print("Chmod successful.")
-
-    return True
-
 def install_poetry() -> bool:
     """Installs Poetry (package manager for Python).
 
@@ -365,14 +340,6 @@ def install_not_ppkd_prog() -> bool:
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Google Chrome was not installed.")
     print("Successfully installed Google Chrome.")
-
-    # neovim
-    print("Installing Neovim...")
-    try:
-        install_neovim()
-    except (InstallationError, TimeoutExpired):
-        raise InstallationError("Neovim was not installed.")
-    print("Successfully installed Neovim.")
 
     # poetry
     print("Installing Poetry...")
