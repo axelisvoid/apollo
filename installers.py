@@ -271,13 +271,13 @@ def install_google_chrome() -> bool:
         raise InstallationError("Failed to download Google Chrome's .deb file.")
     print("Download successful.")
 
-    cmd = "apt install -y ./{file_name}"
+    cmd = f"apt install -y ./{file_name}"
     print("Installing Google Chrome from .deb file...")
     _, errs_ = comm(cmd)
     if errs_:
-        print(errs)
         errs = capture_and_remove_apt_warning(errs_)
         if errs:
+            print(errs)
             raise InstallationError("Failed to install Google Chrome from .deb file.")
     print("Installation successful.")
 
