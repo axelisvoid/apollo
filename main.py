@@ -80,7 +80,7 @@ def main():
 
     print("Cleaning up the mess.")
     if not cleanup():
-        print("Failed cleanup procedures. You should still perform this manually.")
+        print("Failed cleanup procedures. You could still and should perform this manually.")
         print("Delete downloads directory.")
     else:
         print("Cleanup successful.")
