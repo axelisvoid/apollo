@@ -291,7 +291,7 @@ def install_neovim() -> bool:
     """
 
     url = "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    cmd = f"cd {DOWNLOADS_PATH} && curl -LO {url}"
+    cmd = f"cd {DOWNLOADS_PATH} && curl -sO {url}"
     print("Downloading Neovim's .appimage file...")
     _, errs = comm(cmd)
     if errs:
