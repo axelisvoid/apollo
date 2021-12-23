@@ -30,13 +30,11 @@ def main():
     print("Pre-installation procedures were succesful.")
 
     print("Continuing with software installation...")
-    error = 0
     try:
         install_apt_pkgs()
     except InstallationError:
         print("There was a problem installing apt packages.")
-        error += 1
-    if error != 0:
+        print("Exiting...")
         return None
 
     try:
@@ -44,8 +42,6 @@ def main():
     except InstallationError:
         print("There was a problem installing snap packages.")
         print("Exiting...")
-        error += 1
-    if error != 0:
         return None
 
     try:
@@ -53,12 +49,9 @@ def main():
     except InstallationError:
         print("There was a problem installing other packages.")
         print("Exiting...")
-        error += 1
-    if error != 0:
         return None
 
-    if error == 0:
-        print("Installation successful.")
+    print("Installation successful.")
 
     # post-installation
 
