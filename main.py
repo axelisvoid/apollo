@@ -31,30 +31,34 @@ def main():
 
     print("Continuing with software installation...")
     error = 0
-    while error == 0:
-        try:
-            install_apt_pkgs()
-        except InstallationError:
-            print("There was a problem installing apt packages.")
-            error += 1
-        try:
-            install_snap_pkgs()
-        except InstallationError:
-            print("There was a problem installing snap packages.")
-            print("Exiting...")
-            error += 1
-        try:
-            install_not_ppkd_prog()
-        except InstallationError:
-            print("There was a problem installing other packages.")
-            print("Exiting...")
-            error += 1
-
+    try:
+        install_apt_pkgs()
+    except InstallationError:
+        print("There was a problem installing apt packages.")
+        error += 1
     if error != 0:
-        print("Installation process was interrupted. Exiting...")
         return None
 
-    print("Installation successful.")
+    try:
+        install_snap_pkgs()
+    except InstallationError:
+        print("There was a problem installing snap packages.")
+        print("Exiting...")
+        error += 1
+    if error != 0:
+        return None
+
+    try:
+        install_not_ppkd_prog()
+    except InstallationError:
+        print("There was a problem installing other packages.")
+        print("Exiting...")
+        error += 1
+    if error != 0:
+        return None
+
+    if error == 0:
+        print("Installation successful.")
 
     # post-installation
 
