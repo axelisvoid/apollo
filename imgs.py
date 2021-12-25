@@ -14,7 +14,7 @@ def download_img(url: str, dest: str, output: str) -> bool:
 
     # dest is relative to `~/` directory
     if not os.path.exists(dest):
-        raise UnexistentPathError(f"Path {dest_path} does not exists.")
+        raise UnexistentPathError(f"Path {dest} does not exists.")
 
     cmd = f"curl -o ~/{dest}/{output} {url}"
     _, errs = comm(cmd)
