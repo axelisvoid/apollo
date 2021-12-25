@@ -23,12 +23,11 @@ def list_apt_pkgs() -> List[str]:
 
         # needed for other software installation and/or they're simply useful
         "apt-transport-https",
+        "cmake",
         "curl",
         "ca-certificates",
         "gnupg",
         "lsb-release",
-
-        "cmake",
 
         "htop",                         # better than top
         "mmv",                          # move/copy/append/link multiple files according to a set of wildcard patterns
@@ -75,7 +74,7 @@ def install_apt_pkgs() -> bool:
     print("Installing Apt packages...")
 
     for pkg in pkgs:
-        print(f"Installing {pkg}")
+        print(f"Installing {pkg}...")
         _, errs_ = comm(f"apt install -y {pkg}")
         if errs_:
             errs = capture_and_remove_apt_warning(errs_)
