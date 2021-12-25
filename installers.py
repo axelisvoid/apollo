@@ -6,7 +6,7 @@ from cli import capture_and_remove_apt_warning, comm
 from exceptions import InstallationError
 
 
-HOME_PATH = "~/"
+HOME_PATH = "~"
 CURRENT_PATH = str(Path.cwd())
 CONFIG_FILES_PATH = f"{CURRENT_PATH}/files"
 DOWNLOADS_PATH = f"{CURRENT_PATH}/inst_downloads"
