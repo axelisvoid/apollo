@@ -22,7 +22,7 @@ def post_fish_shell() -> bool:
     for file in files:
         src = f"{CONFIG_FILES_PATH}/fish/{file}"
         try:
-            copyfile(src, f"{config_dest}/{file}")
+            copyfile(src, config_dest)
         except SameFileError:
             raise SameFileError("The source and destination files are the same.") from SameFileError
 
