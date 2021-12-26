@@ -1,5 +1,5 @@
 from shutil import copyfile, SameFileError
-from cli import comm
+from cli import comm, car_expected_err_msg
 from exceptions import InstallationError
 from installers import CONFIG_FILES_PATH, HOME_PATH
 
@@ -33,13 +33,16 @@ def post_tmux() -> bool:
     """Fetches Tmux Plugin Manager and copies `.tmux.conf` file to `HOME_PATH`."""
 
     tpm_repo = "https://github.com/tmux-plugins/tpm"        # tpm repo url
-    tpm_clone_path = "~/.tmux/plugins/tpm"                  # tpm repo dest path
+    tpm_clone_path = f"{HOME_PATH}/.tmux/plugins/tpm"       # tpm repo dest path
 
     # clone Tmux Plugin Manager github repo
     cmd = f"git clone {tpm_repo} {tpm_clone_path}"
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to clone Tmux Plugin Manager's github repo.")
+    _, errs_ = comm(cmd)
+    if errs_:
+        expected_err_msg = bytes(f"Cloning into '{HOME_PATH}/.tmux/plugins/tpm'...\n", "utf8")
+        errs = car_expected_err_msg(expected_err_msg, errs_)
+        if errs:
+            raise InstallationError("Failed to clone Tmux Plugin Manager's github repo.")
 
     # copy .tmux.conf file
     src = f"{CONFIG_FILES_PATH}/tmux.conf"                  # tmux.conf source path
