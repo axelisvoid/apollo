@@ -22,15 +22,13 @@ def cmd_concat(cmds: List[str]) -> str:
     return " && ".join(cmds)
 
 
-def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
-    """Captures apt cli constant warning and removes it from an error bytes object."""
-
-    warning = b"\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n"
+def car_expected_err_msg(msg: bytes, errs: bytes) -> Optional[bytes]:
+    """Captures an expected error message and removes it from an error bytes object."""
     
-    if warning in errs:
-        s_warning = warning.decode()
+    if msg in errs:
+        s_msg = msg.decode()
         s_errs = errs.decode()
-        patt = re.compile(s_warning)
+        patt = re.compile(s_msg)
         # search will not return None because we already know the warning is in errs
         res = patt.search(s_errs).span()
         tmp_subs = s_errs[res[0]:res[1]]
@@ -39,3 +37,10 @@ def capture_and_remove_apt_warning(errs: bytes) -> Optional[bytes]:
         errs = capture_and_remove_apt_warning(errs_)
     
     return errs
+
+
+def car_apt_warning(errs: bytes) -> Optional[bytes]:
+    """Capture and remove apt cli constant warning and removes it from an error bytes object."""
+
+    warning = b"\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n"
+    return car_expected_err_msg(warning, errs)
