@@ -2,12 +2,12 @@ from pathlib import Path
 from shutil import which
 from subprocess import TimeoutExpired
 from typing import List
-from cli import capture_and_remove_apt_warning, comm
+from cli import car_apt_warning, comm
 from exceptions import InstallationError
 
 
-HOME_PATH = "~"
-CURRENT_PATH = str(Path.cwd())
+HOME_PATH = Path.home()
+CURRENT_PATH = Path.cwd()
 CONFIG_FILES_PATH = f"{CURRENT_PATH}/files"
 DOWNLOADS_PATH = f"{CURRENT_PATH}/inst_downloads"
 
@@ -78,7 +78,7 @@ def install_apt_pkgs() -> bool:
         print(f"Installing {pkg}...")
         _, errs_ = comm(f"apt install -y {pkg}")
         if errs_:
-            errs = capture_and_remove_apt_warning(errs_)
+            errs = car_apt_warning(errs_)
             if errs:
                 raise InstallationError(f"Failed to install {pkg}.")
 
@@ -159,7 +159,7 @@ def install_brave_browser() -> bool:
     print("Installing brave-browser...")
     _, errs_ = comm(cmd)
     if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
+        errs = car_apt_warning(errs_)
         if errs:
             raise InstallationError("Failed to install Brave Browser's apt package.")
     print("Installation successful.")
@@ -202,7 +202,7 @@ def install_docker() -> bool:
     cmd = "apt update -y"
     _, errs_ = comm(cmd)
     if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
+        errs = car_apt_warning(errs_)
         if errs:
             raise InstallationError("Failed to install Docker apt packages.")
     print("Apt repositories successfully updated.")
@@ -212,7 +212,7 @@ def install_docker() -> bool:
         print(f"Installing {pkg}...")
         _, errs_ = comm(f"apt install -y {pkg}")
         if errs_:
-            errs = capture_and_remove_apt_warning(errs_)
+            errs = car_apt_warning(errs_)
             if errs:
                 raise InstallationError(f"Failed to install Docker {pkg}.")
     print("Installation successful.")
@@ -248,7 +248,7 @@ def install_fish_shell() -> bool:
     print("Installing fish...")
     _, errs_ = comm(cmd)
     if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
+        errs = car_apt_warning(errs_)
         if errs:
             print(errs)
             raise InstallationError("Failed to install Fish shell.")
@@ -275,7 +275,7 @@ def install_google_chrome() -> bool:
     print("Installing Google Chrome from .deb file...")
     _, errs_ = comm(cmd)
     if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
+        errs = car_apt_warning(errs_)
         if errs:
             print(errs)
             raise InstallationError("Failed to install Google Chrome from .deb file.")
@@ -322,7 +322,7 @@ def install_qbittorrent() -> bool:
     print("Installing qbittorrent...")
     _, errs_ = comm(cmd)
     if errs_:
-        errs = capture_and_remove_apt_warning(errs_)
+        errs = car_apt_warning(errs_)
         if errs:
             print(errs)
             raise InstallationError("Failed to install qbittorrent.")
