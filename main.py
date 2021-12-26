@@ -104,9 +104,9 @@ def main():
 
     if is_user_root():
         main_installation()
+        main_cleanup()
     else:
         main_post_installation()
-        main_cleanup()
 
     print("All done here.")
 
