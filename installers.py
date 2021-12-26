@@ -6,7 +6,6 @@ from cli import car_apt_warning, comm
 from exceptions import InstallationError
 
 
-HOME_PATH = Path.home()
 CURRENT_PATH = Path.cwd()
 CONFIG_FILES_PATH = f"{CURRENT_PATH}/files"
 DOWNLOADS_PATH = f"{CURRENT_PATH}/inst_downloads"
