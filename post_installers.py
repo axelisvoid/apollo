@@ -13,12 +13,6 @@ def post_fish_shell() -> bool:
 
     config_dest = f"{HOME_PATH}/.config/fish/functions"
 
-    cmd = f"mkdir -p {config_dest}"
-
-    _, errs = comm(cmd)
-    if errs:
-        raise InstallationError("Failed to create Fish functions directory.")
-
     files = ["fish_greeting.fish", "fish_prompt.fish"]
     for file in files:
         src = f"{CONFIG_FILES_PATH}/fish/{file}"
