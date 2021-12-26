@@ -397,9 +397,11 @@ def cleanup() -> bool:
         return False
 
     cmd = "apt autoclean && apt clean"
-    _, errs = comm(cmd)
-    if errs:
-        return False
+    _, errs_ = comm(cmd)
+    if errs_:
+        errs = car_apt_warning(errs_)
+        if errs:
+            return False
 
     return True
 
