@@ -18,10 +18,12 @@ Python script to add a few apps in a new installation of Ubuntu 20.04 LTS.
     * python3-dev
     * pkg-config
     * tmux
+    * qbittorrent
 
 - Snap packages
     * bitwarden
     * code (visual studio code)
+    * jdownloader2
     * libreoffice
     * signal-desktop
     * spotify
