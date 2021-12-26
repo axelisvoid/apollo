@@ -44,6 +44,7 @@ def list_snap_pkgs() -> List[str]:
 
     pkgs = [
         "bitwarden",
+        "jdownloader2",
         "libreoffice",
         "signal-desktop",
         "spotify",
@@ -240,8 +241,8 @@ def install_fish_shell() -> bool:
     _, errs = comm(cmd)
     if errs:
         print(errs)
-        raise InstallationError("Failed to create Fish's ppa file.")
-    print("Save successful.")
+        raise InstallationError("Failed to add Fish's ppa.")
+    print("Succesfully added.")
 
     cmd = "apt update -y && apt install -y fish"
     print("Installing fish...")
@@ -302,6 +303,34 @@ def install_poetry() -> bool:
 
     return True
 
+
+def install_qbittorrent() -> bool:
+    """Installs qbittorrent.
+    
+    Installation instructions from <https://www.qbittorrent.org/download.php>.
+    """
+
+    cmd = "add-apt-repository ppa:qbittorrent-team/qbittorrent-stable -y"
+    print("Adding qbittorent's apt repository...")
+    _, errs = comm(cmd)
+    if errs:
+        print(errs)
+        raise InstallationError("Failed to add qbittorrent ppa.")
+    print("Successfully added.")
+
+    cmd = "apt update -y && apt install qbittorrent -y"
+    print("Installing qbittorrent...")
+    _, errs_ = comm(cmd)
+    if errs_:
+        errs = capture_and_remove_apt_warning(errs_)
+        if errs:
+            print(errs)
+            raise InstallationError("Failed to install qbittorrent.")
+    print("Installation successful.")
+
+    return True
+
+    
 def install_not_ppkd_prog() -> bool:
     """Installs all programs not in apt nor snap packages."""
 
@@ -347,6 +376,15 @@ def install_not_ppkd_prog() -> bool:
     except (InstallationError, TimeoutExpired):
         raise InstallationError("Poetry was not installed.")
     print("Successfully installed Poetry.")
+
+    # qbittorrent
+    print("Installing qbittorrent...")
+    try:
+        install_poetry()
+    except (InstallationError, TimeoutExpired):
+        raise InstallationError("qbittorrent was not installed.")
+    print("Successfully installed qbittorrent.")
+
 
     return True
 
