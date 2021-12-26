@@ -1,10 +1,11 @@
+from pathlib import Path
 from shutil import copyfile, SameFileError
 from cli import comm, car_expected_err_msg
 from exceptions import InstallationError
-from installers import CONFIG_FILES_PATH, HOME_PATH
+from installers import CONFIG_FILES_PATH
 
 
-############################################ posts ###############################
+HOME_PATH = Path.home()
 
 
 def post_fish_shell() -> bool:
