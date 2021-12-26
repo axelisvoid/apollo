@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+import pathlib
 from exceptions import InstallationError, ImgDownloadError
 from imgs import download_all_imgs
 from installers import (
@@ -14,8 +15,18 @@ from installers import (
 from post_installers import post_install
 
 
-def main():
-    """Entry point for Apollo installer."""
+def is_user_root() -> bool:
+    """Checks if the user executing the script is root."""
+
+    exec_path = pathlib.Path.home()
+    
+    if "root" in str(exec_path):
+        return True
+    return False
+
+
+def main_installation() -> None:
+    """Installs all software to an Ubuntu machine."""
 
     print("Installing packages... This might take a few minutes.")
 
@@ -52,8 +63,12 @@ def main():
         return None
 
     print("Installation successful.")
+    
+    print("Execute this script again as not root for post-installation procedures and cleanup")
 
-    # post-installation
+
+def main_post_installation() -> None:
+    """Executes post-installation procedures."""
 
     print("Starting post-installation procedures.")
     try:
@@ -63,8 +78,6 @@ def main():
         print("Exiting...")
         return None
     print("Post-installation procedures were successful.")
-
-    # images
     
     print("Starting to download all images.")
     try:
@@ -73,7 +86,9 @@ def main():
         print("Some images failed to download.")
         print("Continuing...")
 
-    # cleanup
+
+def main_cleanup() -> None:
+    """Executes cleanup procedures."""
 
     print("Cleaning up the mess.")
     if not cleanup():
@@ -81,6 +96,17 @@ def main():
         print("Delete downloads directory.")
     else:
         print("Cleanup successful.")
+
+
+
+def main():
+    """Entry point for Apollo installer."""
+
+    if is_user_root():
+        main_installation()
+    else:
+        main_post_installation()
+        main_cleanup()
 
     print("All done here.")
 
