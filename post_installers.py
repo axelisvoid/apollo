@@ -1,7 +1,7 @@
 from pathlib import Path
 from shutil import copyfile, SameFileError
 from cli import comm, car_expected_err_msg
-from exceptions import InstallationError
+from exceptions import CliError, InstallationError
 from installers import CONFIG_FILES_PATH
 
 
@@ -17,11 +17,27 @@ def post_fish_shell() -> bool:
     for file in files:
         src = f"{CONFIG_FILES_PATH}/fish/{file}"
         try:
-            copyfile(src, config_dest)
+            copyfile(src, f"{config_dest}/{file}")
         except SameFileError:
             raise SameFileError("The source and destination files are the same.") from SameFileError
 
     return True
+
+
+def post_neovim() -> None:
+    """Copies neovim's config file to its repective directory."""
+
+    dst = f"{HOME_PATH}/.config/neovim"
+    cmd = f"mkdir -p {dst}"
+    _, errs = comm(cmd)
+    if errs:
+        raise CliError(f"Failed to create {cmd} directory.")
+
+    src = f"{CONFIG_FILES_PATH}/neovim/init.vim"
+    try:
+        copyfile(src, dst)
+    except SameFileError:
+        raise SameFileError("The source and destination files are the same.") from SameFileError
 
 
 def post_tmux() -> bool:
@@ -40,7 +56,7 @@ def post_tmux() -> bool:
             raise InstallationError("Failed to clone Tmux Plugin Manager's github repo.")
 
     # copy .tmux.conf file
-    src = f"{CONFIG_FILES_PATH}/tmux.conf"                  # tmux.conf source path
+    src = f"{CONFIG_FILES_PATH}/tmux/tmux.conf"             # tmux.conf source path
     dest = "~/.tmux.conf"                                   # tmux.conf dest path
     try:
         copyfile(src, dest)
@@ -58,6 +74,12 @@ def post_install() -> bool:
         post_fish_shell()
     except InstallationError:
         raise InstallationError("Fish shell's post installation procedures failed.")
+
+    print("Starting post-installation procedures for Neovim.")
+    try:
+        post_neovim()
+    except InstallationError:
+        raise InstallationError("Neovim's post installation procedures failed.")
 
     print("Starting post-installation procedures for Tmux.")
     try:
