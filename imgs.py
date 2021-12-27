@@ -1,12 +1,13 @@
 import os.path
 from cli import comm
 from exceptions import CliError, ImgDownloadError, UnexistentPathError
+from post_installers import HOME_PATH
 
 
 PROF_PIC_URL = "https://avatars.githubusercontent.com/u/66369315?v=4"
 WALLPPER_URL = "https://user-images.githubusercontent.com/66369315/146630739-dc8ee9ed-8c68-41bf-bed2-3f6f35ac804e.png"
 CODE_BGD_URL = "https://user-images.githubusercontent.com/66369315/146630747-d528c3e2-eafe-4aa9-b1db-59572cac4567.png"
-PICS_DEST_PARENT = "Pictures/desk_custom"
+PICS_DEST_PARENT = f"{HOME_PATH}/Pictures/desk_custom"
 
 
 def download_img(url: str, dest: str, output: str) -> bool:
