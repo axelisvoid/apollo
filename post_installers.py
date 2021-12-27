@@ -13,6 +13,11 @@ def post_fish_shell() -> bool:
 
     config_dest = f"{HOME_PATH}/.config/fish/functions"
 
+    cmd = f"mkdir -p {config_dest}"
+    _, errs = comm(cmd)
+    if errs:
+        raise CliError(f"Failed to create {config_dest} directory.")
+
     files = ["fish_greeting.fish", "fish_prompt.fish"]
     for file in files:
         src = f"{CONFIG_FILES_PATH}/fish/{file}"
@@ -57,7 +62,7 @@ def post_tmux() -> bool:
 
     # copy .tmux.conf file
     src = f"{CONFIG_FILES_PATH}/tmux/tmux.conf"             # tmux.conf source path
-    dest = "~/.tmux.conf"                                   # tmux.conf dest path
+    dest = f"{HOME_PATH}/.tmux.conf"                        # tmux.conf dest path
     try:
         copyfile(src, dest)
     except SameFileError:
