@@ -40,7 +40,7 @@ def post_neovim() -> None:
 
     src = f"{CONFIG_FILES_PATH}/neovim/init.vim"
     try:
-        copyfile(src, dst)
+        copyfile(src, f"{dst}/init.vim")
     except SameFileError:
         raise SameFileError("The source and destination files are the same.") from SameFileError
 
