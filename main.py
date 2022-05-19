@@ -1,116 +1,141 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
+from typing import Optional
+#import argparse
 import pathlib
-from exceptions import InstallationError, ImgDownloadError
-from imgs import download_all_imgs
-from installers import (
-    cleanup,
-    install_apt_pkgs,
-    install_not_ppkd_prog,
-    install_snap_pkgs,
-    pre_install,
-)
-from post_installers import post_install
+import re
+import subprocess as subp
 
 
-def is_user_root() -> bool:
-    """Checks if the user executing the script is root."""
+class InstallationError(Exception):
+  """Raised when if an error ocurred during a software installation."""
+  pass
 
-    exec_path = pathlib.Path.home()
+
+class RootUserExpectedError(Exception):
+  """Raised when trying to run a command as a non-root user when a root user is expected."""
+  pass
+
+
+def isroot() -> bool:
+  """Checks if the user running the script is root."""
+
+  exec_path = pathlib.Path.home()
+  
+  if "root" in str(exec_path): return True
+  return False
+
+
+def comm(cmd: str) -> tuple[bytes, Optional[bytes]]:
+  """Executes a terminal command."""
+
+  cmd_ = cmd.split(" ")
+
+  with subp.Popen(cmd_, stdout=subp.PIPE, stderr=subp.PIPE) as proc:
+    try:
+      outs, errs = proc.communicate()
+    except KeyboardInterrupt:
+      proc.kill()
+      raise KeyboardInterrupt from KeyboardInterrupt
+
+  return outs, errs
+
+
+def rmstr(string: bytes, text: bytes) -> bytes:
+  """Removes all ocurrences of a string from a text."""
+
+  if string not in text:
+    return text
+
+  d_string = string.decode()
+  d_text = text.decode()
+
+  patt = re.compile(d_string)
+  # the if stmt above takes care of the AttributeError warning on calling span() on possible NoneType
+  res = patt.search(d_text).span()
+
+  # delete string found from the text
+  newtext = d_text.replace(d_text[res[0]:res[1]], "")
+
+  return rmstr(string, bytes(newtext, "utf8"))
+
+
+def rm_apt_warning(output: bytes) -> bytes:
+  """Removes a typical apt cli warning from stderr message."""
+
+  warning_msg = b"\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n"
+  return rmstr(warning_msg, output)
+
+
+def install_apt_pkgs() -> bool:
+  """Installs apt packages."""
+
+  pkgs = [
     
-    if "root" in str(exec_path):
-        return True
-    return False
+    # for development
+    "build-essential",
+    "python3-dev",
+    "pkg-config",
+
+    # useful to have
+    "apt-transport-https",
+    "cmake",
+    "curl",
+    "ca-certificates",
+    "gnupg",
+    "lsb-release",
+
+    # miscellaneous
+    "htop",
+    "mmv",
+    "neovim",
+    "tmux",
+
+  ]
+
+  cmd = "apt install -y" + " ".join(pkgs)
+  _, errs = comm(cmd)
+  if errs:
+    raise InstallationError("Failed to install apt packages.")
+  return True
 
 
-def main_installation() -> None:
-    """Installs all software to an Ubuntu machine."""
+def install_snap_pkgs() -> bool:
+  """Installs snaps."""
 
-    print("Installing packages... This might take a few minutes.")
+  pkgs = [
+    "bitwarden",
+    "jdownloader2",
+    "lireoffice",
+    "signal-desktop",
+    "spotify",
+    "vlc",
 
-    print("Starting pre-installation procedures.")
-    try:
-        pre_install()
-    except InstallationError:
-        print("Pre-installation procedures failed.")
-        print("Exiting...")
-        return None
+    "sublime-text --classic",
+    "code --classic"
+    "pycharm-community --classic"
+  ]
 
-    print("Pre-installation procedures were succesful.")
-
-    print("Continuing with software installation...")
-    try:
-        install_apt_pkgs()
-    except InstallationError:
-        print("There was a problem installing apt packages.")
-        print("Exiting...")
-        return None
-
-    try:
-        install_snap_pkgs()
-    except InstallationError:
-        print("There was a problem installing snap packages.")
-        print("Exiting...")
-        return None
-
-    try:
-        install_not_ppkd_prog()
-    except InstallationError:
-        print("There was a problem installing other packages.")
-        print("Exiting...")
-        return None
-
-    print("Installation successful.")
-    
-    print("Execute this script again as not root for post-installation procedures and cleanup")
+  for pkg in pkgs:
+    cmd = "snap install " + pkg
+    _, errs = comm(cmd)
+    if errs:
+      raise InstallationError(f"Failed to install {pkg}")
+  return True
 
 
-def main_post_installation() -> None:
-    """Executes post-installation procedures."""
+def cleanup() -> bool:
+  """Tidies up"""
 
-    print("Starting post-installation procedures.")
-    try:
-        post_install()
-    except InstallationError:
-        print("Post-installation procedures failed.")
-        print("Exiting...")
-        return None
-    print("Post-installation procedures were successful.")
-    
-    print("Starting to download all images.")
-    try:
-        download_all_imgs()
-    except ImgDownloadError:
-        print("Some images failed to download.")
-        print("Continuing...")
+  cleanups = [
+    "apt autoclean && apt clean"
+  ]
 
-
-def main_cleanup() -> None:
-    """Executes cleanup procedures."""
-
-    print("Cleaning up the mess.")
-    if not cleanup():
-        print("Failed cleanup procedures. You could still and should perform this manually.")
-        print("Delete downloads directory.")
-    else:
-        print("Cleanup successful.")
-
-
-
-def main():
-    """Entry point for Apollo installer."""
-
-    if is_user_root():
-        main_installation()
-        main_cleanup()
-    else:
-        main_post_installation()
-
-    print("All done here.")
+  for cmd in cleanups:
+    _, errs_ = comm(cmd)
+    if errs_ and rm_apt_warning(errs_):
+      raise InstallationError("Failed in cleanup procedures. Manual cleanup may be necessary.")    
+  
+  return True
 
 
 if __name__ == "__main__":
-
-    main()
+  pass
